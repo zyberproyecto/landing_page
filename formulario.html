@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicitud de afiliación</title>
+  <link href="https://fonts.googleapis.com/css2?family=REM:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/landing.js" defer></script>
+</head>
+<body>
+  <!-- Header (simple) -->
+  <header>
+    <div class="container">
+      <a href="index.html" id="logo" aria-label="Volver al inicio">COOPERATIVA DE VIVIENDAS</a>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">INICIO</a></li>
+          <li><a href="login.html" class="btn login-btn">INICIAR SESIÓN</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Sin action; lo maneja landing.js -->
+    <form id="registro-form" class="form-cliente" autocomplete="off" novalidate>
+      <h2>Solicitud de ingreso</h2>
+
+      <div class="form-group">
+        <label for="CI">CI</label>
+        <input
+          type="text"
+          id="CI"
+          name="CI"
+          inputmode="numeric"
+          autocomplete="off"
+          required
+          placeholder="Ej: 4.123.456-7"
+          aria-describedby="ci-help"
+        />
+        <small id="ci-help" class="help">Ingresá tu cédula (solo números o con guión/puntos).</small>
+      </div>
+
+      <div class="form-group">
+        <label for="nombre">Nombre completo</label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          autocomplete="name"
+          required
+          placeholder="Ej: Valentina Pérez"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          autocomplete="email"
+          required
+          placeholder="tu@correo.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input
+          type="tel"
+          id="telefono"
+          name="telefono"
+          autocomplete="tel"
+          inputmode="tel"
+          required
+          placeholder="Ej: 099 123 456"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="menores_cargo">¿Hay menores a cargo?</label>
+        <select id="menores_cargo" name="menores_cargo" required>
+          <option value="no">No</option>
+          <option value="si">Sí</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="intereses">Cantidad de dormitorios</label>
+        <!-- VALUES numéricas (1|2|3) que landing.js convierte a entero -->
+        <select id="intereses" name="intereses" required>
+          <option value="1">1 dormitorio</option>
+          <option value="2">2 dormitorios</option>
+          <option value="3">3 dormitorios</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="mensaje">Comentarios adicionales</label>
+        <textarea id="mensaje" name="mensaje" rows="4" placeholder="Contanos algo más (opcional)"></textarea>
+      </div>
+
+      <button type="submit" class="btn">Enviar</button>
+      <p data-form-msg style="margin-top:.5rem;min-height:1.25rem;"></p>
+    </form>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 ZYBER S.A.S. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
