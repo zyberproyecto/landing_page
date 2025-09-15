@@ -1,15 +1,13 @@
 /* ========================================================================
-   Landing – lógica de Login + Registro
+   Landing – SOLO API de Usuarios (login + alta de solicitudes)
    ======================================================================== */
 
 /* ========= Endpoints ========= */
 const API_USUARIOS_BASE = "http://127.0.0.1:8001"; // Laravel api-usuarios
-const API_COOP_BASE     = "http://127.0.0.1:8002"; // Laravel api-cooperativa
-const BACKOFFICE_URL    = "http://127.0.0.1:8003"; // app-backoffice (tiene /sso)
 const FRONT_SOCIOS_URL  = "http://127.0.0.1:5500/frontend_usuarios/index.html";
 
 /* ========= Helpers ========= */
-function $(sel, root) { return (root || document).querySelector(sel); }
+const $ = (sel, root) => (root || document).querySelector(sel);
 
 function setMsgBelowForm(form, text, color) {
   let msg = form.querySelector("[data-form-msg]");
@@ -62,32 +60,40 @@ function extractToken(possible) {
   );
 }
 
+/* ===== CI helpers ===== */
+function normalizeCI(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 8);
+}
+function looksLikeEmail(v) {
+  return /@/.test(String(v || ""));
+}
+function isValidCI(digitsOnly) {
+  return /^\d{7,8}$/.test(String(digitsOnly || ""));
+}
+
 /* ========= App ========= */
 document.addEventListener("DOMContentLoaded", () => {
-
   /* ================== LOGIN (landing/login.html) ================== */
-  const loginForm =
-    $("#login-form") ||
-    (function searchLoginFallback(){
-      const f = document.querySelector("form");
-      if (!f) return null;
-      // Compatibilidad: acepta #ci_usuario o #usuario
-      const u = $("#ci_usuario", f) || $("#usuario", f);
-      const p = $("#password", f);
-      return (u && p) ? f : null;
-    })();
-
+  const loginForm = $("#login-form");
   if (loginForm) {
+    const loginInput = $("#ci_usuario", loginForm) || $("#login", loginForm);
+    if (loginInput) {
+      loginInput.addEventListener("input", () => {
+        // Si parece CI, normalizo; si parece email, lo dejo como está
+        const raw = loginInput.value;
+        loginInput.value = looksLikeEmail(raw) ? raw.trim() : normalizeCI(raw);
+      });
+    }
+
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      // Lee CI desde #ci_usuario (recomendado) o #usuario (compatibilidad)
-      const ci_usuario =
-        ($("#ci_usuario", loginForm)?.value || $("#usuario", loginForm)?.value || "").trim();
+      const raw = (loginInput?.value || "").trim();
+      const loginValue = looksLikeEmail(raw) ? raw : normalizeCI(raw);
       const password = ($("#password", loginForm)?.value || "");
 
-      if (!ci_usuario || !password) {
-        setMsgBelowForm(loginForm, "Completá CI y contraseña.", "#b00");
+      if ((looksLikeEmail(raw) && !password) ||
+          (!looksLikeEmail(raw) && (!isValidCI(loginValue) || !password))) {
+        setMsgBelowForm(loginForm, "Completá tu usuario (CI o email) y contraseña.", "#b00");
         return;
       }
 
@@ -95,56 +101,38 @@ document.addEventListener("DOMContentLoaded", () => {
         setMsgBelowForm(loginForm, "Procesando login...");
 
         // 1) Login en API Usuarios
-        //    POST http://127.0.0.1:8001/api/login
-        //    El backend espera { login, password } (login = CI o email)
         const loginResp = await postJSON(`${API_USUARIOS_BASE}/api/login`, {
-          login: ci_usuario,
+          login: loginValue, // CI normalizada o email
           password
         });
 
         const token = extractToken(loginResp);
         if (!token) throw new Error("No llegó token desde API Usuarios.");
 
-        // Guarda token para el front de socios / backoffice
         try { localStorage.setItem("token", token); } catch {}
 
-        // 2) Perfil del usuario autenticado
-        //    GET http://127.0.0.1:8001/api/me (con Bearer)
+        // 2) Confirmo estado del usuario
         const perfilResp = await getJSON(`${API_USUARIOS_BASE}/api/me`, token);
         const perfil = perfilResp?.user || perfilResp?.data || perfilResp || {};
-
-        const rol    = perfil?.rol ?? loginResp?.rol ?? loginResp?.user?.rol ?? "socio";
-        const estado = perfil?.estado_registro ?? perfil?.estado ?? "pendiente";
-
-        // Normalizar comparaciones
-        const rolNorm    = (rol + "").trim().toLowerCase();
-        const estadoNorm = (estado + "").trim().toLowerCase();
-        const aprobado = ["aprobado","aprobada","ok","activo","activa","validado","validada"].includes(estadoNorm);
+        const estado = (perfil?.estado_registro ?? perfil?.estado ?? "pendiente").toString().toLowerCase();
+        const aprobado = ["aprobado","aprobada","ok","activo","activa","validado","validada"].includes(estado);
 
         if (!aprobado) {
-          setMsgBelowForm(loginForm, "Usuario no aprobado aún.", "#b00");
+          setMsgBelowForm(loginForm, "Usuario aún no aprobado por la cooperativa.", "#b00");
           return;
         }
 
-        // 3) Redirecciones por rol, PASANDO TOKEN
-        if (rolNorm === "admin") {
-          setMsgBelowForm(loginForm, "Login OK (admin). Redirigiendo al Backoffice...", "green");
-          // Recomendado: /sso?token=<...> para que el backoffice guarde el token
-          window.location.assign(`${BACKOFFICE_URL}/sso?token=${encodeURIComponent(token)}`);
-        } else {
-          setMsgBelowForm(loginForm, "Login OK (socio). Redirigiendo al portal...", "green");
-          // Recomendado: pasar token por hash y ya también quedó guardado en localStorage
-          window.location.assign(`${FRONT_SOCIOS_URL}#token=${encodeURIComponent(token)}`);
-        }
+        // 3) Redirijo SOLO al Front de Socios con el token (Landing no toca Backoffice)
+        setMsgBelowForm(loginForm, "Login OK. Redirigiendo...", "green");
+        window.location.assign(`${FRONT_SOCIOS_URL}#token=${encodeURIComponent(token)}`);
       } catch (err) {
         console.error("Login error:", err);
         const msg =
           err?.errors?.login?.[0] ||
-          err?.errors?.ci_usuario?.[0] ||
           err?.errors?.password?.[0] ||
           err?.message ||
           err?.error ||
-          "Credenciales inválidas o usuario no aprobado.";
+          "Credenciales inválidas.";
         setMsgBelowForm(loginForm, msg, "#b00");
       }
     });
@@ -153,37 +141,50 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================== REGISTRO (landing/formulario.html) ================== */
   const regForm = $("#registro-form");
   if (regForm) {
+    const ciInput = $("#ci_usuario", regForm);
+    if (ciInput) {
+      ciInput.addEventListener("input", () => {
+        ciInput.value = normalizeCI(ciInput.value);
+      });
+    }
+
     regForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const CI        = $("#CI")?.value.trim() || "";
-      const nombre    = $("#nombre")?.value.trim() || "";
-      const email     = $("#email")?.value.trim() || "";
-      const telefono  = $("#telefono")?.value.trim() || "";
-      const menores   = $("#menores_cargo")?.value || "no";   // "si" | "no"
-      const interes   = $("#intereses")?.value || "1";        // "1" | "2" | "3"
-      const mensaje   = $("#mensaje")?.value.trim() || "";
+      const ci_usuario = normalizeCI($("#ci_usuario")?.value || "");
+      const nombre     = ($("#nombre")?.value || "").trim();
+      const email      = ($("#email")?.value || "").trim();
+      const telefono   = ($("#telefono")?.value || "").trim();
+      const menores    = $("#menores_cargo")?.value || "no"; // "si" | "no"
+      const dormitorios= parseInt($("#dormitorios")?.value || "1", 10);
+      const comentarios= ($("#comentarios")?.value || "").trim();
 
-      if (!CI || !nombre || !email || !telefono) {
+      if (!isValidCI(ci_usuario)) {
+        setMsgBelowForm(regForm, "La CI debe tener 7 u 8 dígitos (solo números).", "#b00");
+        ciInput?.focus();
+        return;
+      }
+      if (!nombre || !email || !telefono) {
         setMsgBelowForm(regForm, "Completá todos los campos obligatorios.", "#b00");
         return;
       }
 
       setMsgBelowForm(regForm, "Enviando solicitud...");
 
-      // Contrato limpio para la API: boolean + entero
+      // Importante: la tabla se llama 'solicitudes' y la columna es 'ci' (no 'ci_usuario')
+      // columnas: ci, nombre_completo, email, telefono, menores_a_cargo, dormitorios, comentarios
       const payload = {
-        ci_usuario: CI,
+        ci: ci_usuario,
         nombre_completo: nombre,
         email,
         telefono,
-        menores_a_cargo: (menores === "si"), // boolean
-        dormitorios: parseInt(interes, 10),  // entero 1..3
-        comentarios: mensaje || null,
+        menores_a_cargo: menores === "si" ? 1 : 0,
+        dormitorios,
+        comentarios: comentarios || null,
       };
 
       try {
-        await postJSON(`${API_COOP_BASE}/api/solicitudes`, payload);
+        await postJSON(`${API_USUARIOS_BASE}/api/register`, payload);
         setMsgBelowForm(regForm, "¡Solicitud enviada! Te contactaremos cuando sea aprobada.", "green");
         regForm.reset();
       } catch (err) {
