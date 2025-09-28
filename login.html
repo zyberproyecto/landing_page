@@ -3,66 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Iniciar sesión | Cooperativa</title>
-  <link rel="stylesheet" href="css/estilos.css" />
+  <title>Redirigiendo...</title>
+  <!-- Redirección automática -->
+  <meta http-equiv="refresh" content="0;url=http://127.0.0.1:5001/login.html">
   <link href="https://fonts.googleapis.com/css2?family=REM:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
-  <script src="js/landing.js" defer></script>
+  <style>
+    body {
+      font-family: 'REM', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      background: #f9f9f9;
+      color: #333;
+    }
+    a {
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <div class="container">
-      <a href="index.html" id="logo" aria-label="Volver al inicio">COOPERATIVA DE VIVIENDAS</a>
-      <nav>
-        <ul>
-          <li><a href="index.html">INICIO</a></li>
-          <li><a href="formulario.html">CONTACTO</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Formulario de login -->
-  <main class="container">
-    <!-- Lo maneja landing.js -->
-    <form id="login-form" class="form-cliente" autocomplete="off" novalidate>
-      <h2 style="text-align: center;">Iniciar sesión</h2>
-
-      <div class="form-group">
-        <label for="ci_usuario">CI</label>
-        <input
-          type="text"
-          id="ci_usuario"
-          name="ci_usuario"
-          required
-          inputmode="numeric"
-          autocomplete="username"
-          placeholder="Ej: 4.123.456-7"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          autocomplete="current-password"
-          placeholder="Tu contraseña"
-        />
-      </div>
-
-      <button type="submit" class="btn">Entrar</button>
-      <p data-form-msg style="margin-top:.5rem;min-height:1.25rem;"></p>
-    </form>
+  <main>
+    <h1>Redirigiendo al área de socios...</h1>
+    <p>Si la redirección no funciona, haz clic aquí:</p>
+    <p><a href="http://127.0.0.1:5001/login.html">Ir al login de socios</a></p>
   </main>
-
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 ZYBER S.A.S. Todos los derechos reservados.</p>
-    </div>
-  </footer>
 </body>
 </html>

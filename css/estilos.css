@@ -278,3 +278,84 @@ section {
 .hours-list { list-style:none; padding-left:0; }
 .hours-list li { padding:.45rem 0; border-bottom:1px solid #1e2530; }
 .tag { display:inline-block; background:#12766a; color:#E0E0E0; padding:.15rem .5rem; border-radius:4px; font-size:.8rem; }
+
+/* =======================================================================
+   Mejores mensajes y accesibilidad (ADITIVO, no rompe estilos existentes)
+   ======================================================================= */
+
+/* Alertas de formulario */
+.form-alert {
+  display: block;
+  margin: 12px 0 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  border: 1px solid transparent;
+}
+
+.form-alert.success {
+  background: #ecfdf5;     /* verde claro */
+  color: #065f46;          /* verde oscuro */
+  border-color: #6ee7b7;   /* verde medio */
+}
+
+.form-alert.error {
+  background: #fef2f2;     /* rojo claro */
+  color: #991b1b;          /* rojo oscuro */
+  border-color: #fca5a5;   /* rojo medio */
+}
+
+.form-alert.info {
+  background: #eff6ff;     /* azul claro */
+  color: #1e3a8a;          /* azul oscuro */
+  border-color: #93c5fd;   /* azul medio */
+}
+
+/* Texto de ayuda del formulario */
+.help {
+  display: block;
+  margin-top: .35rem;
+  font-size: .9rem;
+  color: #A0AEC0;
+}
+
+/* Estado inválido opcional para inputs (si querés usar .is-invalid en JS) */
+.is-invalid {
+  border-color: #fca5a5 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(252,165,165,.25);
+}
+
+/* Botón deshabilitado */
+button[disabled],
+.btn[disabled] {
+  opacity: .65;
+  cursor: not-allowed;
+  filter: grayscale(15%);
+}
+
+/* Foco visible en enlaces y botones (accesibilidad) */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #34D399;
+  outline-offset: 2px;
+}
+
+/* Utility para contenido solo para lectores de pantalla */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* Ajuste responsivo suave del contenedor */
+@media (max-width: 640px) {
+  .container { width: 92%; }
+}
